@@ -31,6 +31,14 @@ class LoginService {
         return null
     }
 
+    isAuthenticated() {
+        return this.getSession() !== null;
+    }
+
+    destroySession() {
+        localStorage.removeItem('sessionUser');
+    }
+
 }
 
 export default new LoginService();

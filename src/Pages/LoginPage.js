@@ -18,6 +18,7 @@ const LoginPage = () => {
                 console.log(LoginService.getSession());
                 console.log(LoginService.getToken());
 
+                history.push('/dashboard');
             });
     }
 

@@ -1,8 +1,7 @@
-import {Redirect} from 'react-router';
 import {useHistory} from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import {Button, Container, Form, Row, Col} from 'react-bootstrap';
-import {login} from '../API/login';
+import LoginService from '../Services/LoginService';
 
 const LoginPage = () => {
     let history = useHistory();
@@ -13,18 +12,13 @@ const LoginPage = () => {
             username: event.target.username.value,
             password: event.target.password.value
         };
-        login(credentials).then((response) => {
-            const {data} = response;
-            let userData = {
-                id: data['id'],
-                username: data['username'],
-                token: data['token'],
-                email: data['email']
-            };
-            console.log(userData);
-            history.push('/dashboard');
-            // return <Redirect to='/dashboard'/>;
-        })
+        LoginService.login(credentials)
+            .then((response) => {
+                LoginService.setSession(response.data);
+                console.log(LoginService.getSession());
+                console.log(LoginService.getToken());
+
+            });
     }
 
 

@@ -4,12 +4,11 @@ class LoginService {
 
     login(data) {
         return request({
-            url: 'api-token-auth/',
+            url: '/api-token-auth/',
             method: 'post',
             data: data
         });
     }
-
 
     setSession(data) {
         localStorage.setItem('sessionUser', JSON.stringify(data));

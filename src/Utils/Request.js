@@ -1,4 +1,5 @@
 import axios from 'axios';
+import LoginService from '../Services/LoginService';
 // create an axios instance
 const service = axios.create({
     baseURL: process.env.REACT_APP_API_DOMAIN, // url = base url + request url
@@ -7,8 +8,10 @@ const service = axios.create({
 // request interceptor
 service.interceptors.request.use(
     config => {
-        // do something before request is sent
 
+        if (LoginService.isAuthenticated()) {
+            config.headers['Authorization'] = 'Token ' + LoginService.getToken();
+        }
         return config;
     },
     error => {

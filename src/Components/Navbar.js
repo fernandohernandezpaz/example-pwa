@@ -25,8 +25,9 @@ const Navbar = () => {
                     <Nav.Link as={Link} to="/dashboard">Dashboard</Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
-                    <Nav.Link as={Link} to="/test">Test</Nav.Link>
+                    <Nav.Link as={Link} to="/cursos">Cursos</Nav.Link>
                 </Nav.Item>
+
 
                 {loginOpcion}
                 {logoutOpcion}

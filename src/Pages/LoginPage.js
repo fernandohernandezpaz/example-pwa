@@ -12,11 +12,8 @@ const LoginPage = () => {
         let db = new Dexie(process.env.REACT_APP_DB_NAME);
 
         db.version(1).stores({
-            user: "++id, username, token, email"
-        });
-
-        db.version(1).stores({
-            cursos: "++id, nombre, slug, descripcion, foto, curso_temas, syncro"
+            user: "++id, username, token, email",
+            cursos: "++id, id_db, nombre, slug, descripcion, foto, curso_temas, syncro"
         });
 
         const credentials = {
@@ -27,33 +24,29 @@ const LoginPage = () => {
             .then((response) => {
                 LoginService.setSession(response.data);
                 CursosService.cursos()
-                    .then(response => {
-                        const cursosTable = db.cursos.schema.indexes;
-                        for (const curso in response.data) {
+                    .then(async response => {
+                        for (const curso of response.data) {
+                            const existeCursoDBLocal = await db.cursos.where({
+                                id_db: curso.id
+                            }).first();
 
-                            if (!cursosTable.find(c => c.id === curso.id)) {
-                                db.cursos.add({
-                                    id: curso.id,
-                                    nombre: curso.nombre,
-                                    slug: curso.slug,
-                                    curso_temas: curso.curso_temas,
-                                    descripcion: curso.descripcion,
-                                    foto: curso.foto,
-                                    syncro: true
-                                });
+                            const registro = {
+                                id_db: curso.id,
+                                nombre: curso.nombre,
+                                slug: curso.slug,
+                                curso_temas: curso.curso_temas,
+                                descripcion: curso.descripcion,
+                                foto: curso.foto,
+                                syncro: true
+                            };
+
+                            if (!existeCursoDBLocal) {
+                                db.cursos.add(registro);
                             } else {
-                                // db.curso.put({
-                                //     id: curso.id,
-                                //     nombre: curso.nombre,
-                                //     slug: curso.slug,
-                                //     curso_temas: curso.curso_temas,
-                                //     descripcion: curso.descripcion,
-                                //     foto: curso.foto,
-                                //     syncro: true
-                                // });
+                                registro['id'] = existeCursoDBLocal.id;
+                                db.cursos.put(registro);
                             }
                         }
-
                     });
                 history.push('/dashboard');
 

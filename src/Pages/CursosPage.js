@@ -17,7 +17,7 @@ const CursosPage = () => {
     const [mensaje, setMensaje] = useState(null);
 
     db.version(1).stores({
-        curso: "++id, nombre, descripcion, foto"
+        cursos: "++id, nombre, descripcion, foto"
     });
 
     /*console.log(navigator.onLine, 'Estado navegador');
@@ -28,9 +28,9 @@ const CursosPage = () => {
             });
     }*/
 
-    useEffect(() => {
-        const cursosObtenidos  = await db.cursos.toArray()
-        setCursos(cursosObtenidos);
+    useEffect(async () => {
+        const cursosObtenidos = await db.cursos.toArray();
+         setCursos(cursosObtenidos);
         // if(navigator.onLine) {
         //     db.curso.each(function (obj) {
         //         // console.log(obj.nombre, JSON.stringify(obj));
@@ -61,7 +61,7 @@ const CursosPage = () => {
         const formData = new FormData();
         const nombre = event.target.nombre.value;
         const descripcion = event.target.descripcion.value;
-        const foto =  event.target.foto.files[0];
+        const foto = event.target.foto.files[0];
 
         progresarBarra(25)//25
         formData.append('nombre', nombre)
@@ -77,6 +77,11 @@ const CursosPage = () => {
             'fecha_hasta', `2021-${Math.floor(Math.random() * 11) + 1}-${Math.floor(Math.random() * 28) + 1}`
         );
 
+    db.cursos.put({
+            nombre,
+            descripcion,
+            foto
+        }); return;
         CursosService.crearCurso(formData)
             .then((response) => {
                 progresarBarra(100)//100
@@ -110,8 +115,6 @@ const CursosPage = () => {
                 }, 3000);
             });
     }
-
-
 
 
     useEffect(() => {

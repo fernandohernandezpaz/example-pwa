@@ -77,11 +77,6 @@ const CursosPage = () => {
             'fecha_hasta', `2021-${Math.floor(Math.random() * 11) + 1}-${Math.floor(Math.random() * 28) + 1}`
         );
 
-    db.cursos.put({
-            nombre,
-            descripcion,
-            foto
-        }); return;
         CursosService.crearCurso(formData)
             .then((response) => {
                 progresarBarra(100)//100
@@ -100,7 +95,7 @@ const CursosPage = () => {
 
                 handleClose();
                 //
-                // db.curso.put({
+                // db.cursos.put({
                 //     nombre,
                 //     descripcion,
                 //     foto

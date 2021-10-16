@@ -4,6 +4,7 @@ import {Table, Image, Dropdown, Button, Row, Col, Form} from 'react-bootstrap';
 import {FloatingLabel, ProgressBar, Alert} from 'react-bootstrap';
 import CursosService from '../Services/CursosService';
 import DialogModal from '../Components/DialogModal'
+import Dexie from 'dexie';
 
 const CursosPage = () => {
 
@@ -14,6 +15,30 @@ const CursosPage = () => {
     const [guardando, setGuardando] = useState(false);
     const [progreso, setProgreso] = useState(10);
     const [mensaje, setMensaje] = useState(null);
+
+    var db = new Dexie("cursosDB");
+
+    db.version(1).stores({
+        curso: "++id, nombre, descripcion, foto"
+    });
+
+    /*console.log(navigator.onLine, 'Estado navegador');
+    if ('storage' in navigator && 'estimate' in navigator.storage) {
+        navigator.storage.estimate()
+            .then(function(estimate){
+                console.log(`Using ${estimate.usage} out of ${estimate.quota} bytes.`);
+            });
+    }*/
+
+    useEffect(() => {
+        if(navigator.onLine) {
+            db.curso.each(function (obj) {
+                // console.log(obj.nombre, JSON.stringify(obj));
+            }).then(function () {
+                console.log("Finished.");
+            })
+        }
+    }, []);
 
     const handleClose = () => setShowModal(false);
     const handleShow = () => setShowModal(true);
@@ -29,14 +54,20 @@ const CursosPage = () => {
     }
 
     const guardarRegistro = (event) => {
+        console.log(event);
         event.preventDefault();
         setGuardando(true);
         progresarBarra(20)// 20
         const formData = new FormData();
+        const nombre = event.target.nombre.value;
+        const descripcion = event.target.descripcion.value;
+        const foto =  event.target.foto.files[0];
+
         progresarBarra(25)//25
-        formData.append('nombre', event.target.nombre.value)
-        formData.append('descripcion', event.target.descripcion.value)
-        formData.append('foto', event.target.foto.files[0])
+        formData.append('nombre', nombre)
+        formData.append('descripcion', descripcion)
+        formData.append('foto', foto)
+
         progresarBarra(55)//55
         formData.append(
             'fecha_desde', `2021-${Math.floor(Math.random() * 11) + 1}-${Math.floor(Math.random() * 28) + 1}`
@@ -44,7 +75,8 @@ const CursosPage = () => {
         progresarBarra(80)//80
         formData.append(
             'fecha_hasta', `2021-${Math.floor(Math.random() * 11) + 1}-${Math.floor(Math.random() * 28) + 1}`
-        )
+        );
+
         CursosService.crearCurso(formData)
             .then((response) => {
                 progresarBarra(100)//100
@@ -59,7 +91,16 @@ const CursosPage = () => {
             })
             .catch(error => {
                 setGuardando(false);
-                progresarBarra(0)//100
+                progresarBarra(0); //100
+
+                handleClose();
+
+                db.curso.put({
+                    nombre,
+                    descripcion,
+                    foto
+                });
+
                 setMensaje({
                     mensaje: 'Error al guardar',
                     tipo: 'danger'
@@ -69,6 +110,9 @@ const CursosPage = () => {
                 }, 3000);
             });
     }
+
+
+
 
     useEffect(() => {
         if (!guardando) {

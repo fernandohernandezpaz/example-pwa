@@ -31,13 +31,13 @@ const CursosPage = () => {
     }*/
 
     useEffect(() => {
-        if(navigator.onLine) {
-            db.curso.each(function (obj) {
-                // console.log(obj.nombre, JSON.stringify(obj));
-            }).then(function () {
-                console.log("Finished.");
-            })
-        }
+        // if(navigator.onLine) {
+        //     db.curso.each(function (obj) {
+        //         // console.log(obj.nombre, JSON.stringify(obj));
+        //     }).then(function () {
+        //         console.log("Finished.");
+        //     })
+        // }
     }, []);
 
     const handleClose = () => setShowModal(false);
@@ -94,12 +94,12 @@ const CursosPage = () => {
                 progresarBarra(0); //100
 
                 handleClose();
-
-                db.curso.put({
-                    nombre,
-                    descripcion,
-                    foto
-                });
+                //
+                // db.curso.put({
+                //     nombre,
+                //     descripcion,
+                //     foto
+                // });
 
                 setMensaje({
                     mensaje: 'Error al guardar',

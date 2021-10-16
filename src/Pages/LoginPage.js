@@ -1,12 +1,23 @@
 import {useHistory} from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import {Button, Container, Form,  Col} from 'react-bootstrap';
+import {Button, Container, Form, Col} from 'react-bootstrap';
 import LoginService from '../Services/LoginService';
+import CursosService from '../Services/CursosService';
+import Dexie from 'dexie';
 
 const LoginPage = () => {
     let history = useHistory();
     const initSession = (event) => {
         event.preventDefault();
+        let db = new Dexie("webdb");
+
+        db.version(1).stores({
+            user: "++id, username, token, email"
+        });
+
+        db.version(1).stores({
+            curso: "++id, nombre, slug, descripcion, foto, curso_temas, syncro"
+        });
 
         const credentials = {
             username: event.target.username.value,
@@ -15,10 +26,22 @@ const LoginPage = () => {
         LoginService.login(credentials)
             .then((response) => {
                 LoginService.setSession(response.data);
-                console.log(LoginService.getSession());
-                console.log(LoginService.getToken());
-
+                CursosService.cursos()
+                    .then(response => {
+                        db.curso.bulkAdd(
+                            response.data.map(curso => ({
+                                id: curso.id,
+                                nombre: curso.nombre,
+                                slug: curso.slug,
+                                curso_temas: curso.curso_temas,
+                                descripcion: curso.descripcion,
+                                foto: curso.foto,
+                                syncro: true
+                            }))
+                        )
+                    });
                 history.push('/dashboard');
+
             });
     }
 

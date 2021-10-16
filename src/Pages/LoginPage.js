@@ -22,6 +22,9 @@ const LoginPage = () => {
         };
         LoginService.login(credentials)
             .then((response) => {
+                if (response.status === 200)  {
+                    db.user.put(response.data);
+                }
                 LoginService.setSession(response.data);
                 CursosService.cursos()
                     .then(async response => {

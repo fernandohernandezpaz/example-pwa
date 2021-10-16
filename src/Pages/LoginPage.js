@@ -9,14 +9,14 @@ const LoginPage = () => {
     let history = useHistory();
     const initSession = (event) => {
         event.preventDefault();
-        let db = new Dexie("webdb");
+        let db = new Dexie(process.env.REACT_APP_DB_NAME);
 
         db.version(1).stores({
             user: "++id, username, token, email"
         });
 
         db.version(1).stores({
-            curso: "++id, nombre, slug, descripcion, foto, curso_temas, syncro"
+            cursos: "++id, nombre, slug, descripcion, foto, curso_temas, syncro"
         });
 
         const credentials = {
@@ -28,17 +28,32 @@ const LoginPage = () => {
                 LoginService.setSession(response.data);
                 CursosService.cursos()
                     .then(response => {
-                        db.curso.bulkAdd(
-                            response.data.map(curso => ({
-                                id: curso.id,
-                                nombre: curso.nombre,
-                                slug: curso.slug,
-                                curso_temas: curso.curso_temas,
-                                descripcion: curso.descripcion,
-                                foto: curso.foto,
-                                syncro: true
-                            }))
-                        )
+                        const cursosTable = db.cursos.schema.indexes;
+                        for (const curso in response.data) {
+
+                            if (!cursosTable.find(c => c.id === curso.id)) {
+                                db.cursos.add({
+                                    id: curso.id,
+                                    nombre: curso.nombre,
+                                    slug: curso.slug,
+                                    curso_temas: curso.curso_temas,
+                                    descripcion: curso.descripcion,
+                                    foto: curso.foto,
+                                    syncro: true
+                                });
+                            } else {
+                                // db.curso.put({
+                                //     id: curso.id,
+                                //     nombre: curso.nombre,
+                                //     slug: curso.slug,
+                                //     curso_temas: curso.curso_temas,
+                                //     descripcion: curso.descripcion,
+                                //     foto: curso.foto,
+                                //     syncro: true
+                                // });
+                            }
+                        }
+
                     });
                 history.push('/dashboard');
 

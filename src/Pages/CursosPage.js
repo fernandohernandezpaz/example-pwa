@@ -7,7 +7,7 @@ import DialogModal from '../Components/DialogModal'
 import Dexie from 'dexie';
 
 const CursosPage = () => {
-
+    let db = new Dexie(process.env.REACT_APP_DB_NAME);
     const [cursos, setCursos] = useState([]);
     const [tituloModal, setTituloModal] = useState('');
     const [id, setId] = useState('');
@@ -15,8 +15,6 @@ const CursosPage = () => {
     const [guardando, setGuardando] = useState(false);
     const [progreso, setProgreso] = useState(10);
     const [mensaje, setMensaje] = useState(null);
-
-    var db = new Dexie("cursosDB");
 
     db.version(1).stores({
         curso: "++id, nombre, descripcion, foto"
@@ -31,6 +29,8 @@ const CursosPage = () => {
     }*/
 
     useEffect(() => {
+        const cursosObtenidos  = await db.cursos.toArray()
+        setCursos(cursosObtenidos);
         // if(navigator.onLine) {
         //     db.curso.each(function (obj) {
         //         // console.log(obj.nombre, JSON.stringify(obj));

@@ -1,23 +1,85 @@
 import {useState, useEffect} from 'react';
 import MainLayout from '../Components/MainLayout';
-import {Table, Image, Dropdown, Button, Row, Col} from 'react-bootstrap';
+import {Table, Image, Dropdown, Button, Row, Col, Form} from 'react-bootstrap';
+import {FloatingLabel, ProgressBar, Alert} from 'react-bootstrap';
 import CursosService from '../Services/CursosService';
+import DialogModal from '../Components/DialogModal'
 
 const CursosPage = () => {
 
     const [cursos, setCursos] = useState([]);
+    const [tituloModal, setTituloModal] = useState('');
+    const [id, setId] = useState('');
+    const [showModal, setShowModal] = useState(false);
+    const [guardando, setGuardando] = useState(false);
+    const [progreso, setProgreso] = useState(10);
+    const [mensaje, setMensaje] = useState(null);
 
-    useEffect(() => {
-        CursosService.cursos()
-            .then(response => {
-                setCursos(response.data);
-            })
-            .catch(error => console.log('El token no ha sido seteado'))
-    }, []);
+    const handleClose = () => setShowModal(false);
+    const handleShow = () => setShowModal(true);
+    const progresarBarra = (progress) => setProgreso(progress)
+    const crearModal = () => {
+        setTituloModal('Crear curso');
+        handleShow();
+    }
 
     const cargarRegistro = (id, accion = null) => {
+        handleShow();
         console.log(id, accion);
     }
+
+    const guardarRegistro = (event) => {
+        event.preventDefault();
+        setGuardando(true);
+        progresarBarra(20)// 20
+        const formData = new FormData();
+        progresarBarra(25)//25
+        formData.append('nombre', event.target.nombre.value)
+        formData.append('descripcion', event.target.descripcion.value)
+        formData.append('foto', event.target.foto.files[0])
+        progresarBarra(55)//55
+        formData.append(
+            'fecha_desde', `2021-${Math.floor(Math.random() * 11) + 1}-${Math.floor(Math.random() * 28) + 1}`
+        )
+        progresarBarra(80)//80
+        formData.append(
+            'fecha_hasta', `2021-${Math.floor(Math.random() * 11) + 1}-${Math.floor(Math.random() * 28) + 1}`
+        )
+        CursosService.crearCurso(formData)
+            .then((response) => {
+                progresarBarra(100)//100
+                setTimeout(() => {
+                    setMensaje({
+                        mensaje: response.data.message,
+                        tipo: 'success'
+                    })
+                    setGuardando(false);
+                    progresarBarra(0)
+                }, 1000);
+            })
+            .catch(error => {
+                setGuardando(false);
+                progresarBarra(0)//100
+                setMensaje({
+                    mensaje: 'Error al guardar',
+                    tipo: 'danger'
+                })
+                setTimeout(() => {
+                    setMensaje(null);
+                }, 3000);
+            });
+    }
+
+    useEffect(() => {
+        if (!guardando) {
+            CursosService.cursos()
+                .then(response => {
+                    setCursos(response.data);
+                })
+                .catch(error => console.log('El token no ha sido seteado'))
+        }
+    }, [guardando]);
+
 
     let rowCursosMarkup = cursos.length > 0 && (
         cursos.map(curso => (
@@ -25,7 +87,8 @@ const CursosPage = () => {
                 <td>{curso.id}</td>
                 <td>{curso.nombre}</td>
                 <td>{curso.descripcion}</td>
-                <td><Image src={`${process.env.REACT_APP_API_DOMAIN}${curso.foto}`} rounded/></td>
+                <td><Image style={{width: '200px'}} src={`${process.env.REACT_APP_API_DOMAIN}${curso.foto}`} rounded/>
+                </td>
                 <td>
                     <Dropdown>
                         <Dropdown.Toggle variant="primary" id="dropdown-basic">
@@ -53,7 +116,7 @@ const CursosPage = () => {
                     <h1>Lista de Cursos</h1>
                 </Col>
                 <Col xs="12" md="6" lg="6" className={'text-end'}>
-                    <Button variant="success">Crear Curos</Button>
+                    <Button variant="success" onClick={() => crearModal()}>Crear Curso</Button>
                 </Col>
                 <Col xs="12" md="12" lg="12">
                     <Table striped bordered hover>
@@ -72,6 +135,48 @@ const CursosPage = () => {
                     </Table>
                 </Col>
             </Row>
+
+            <DialogModal show={showModal} title={tituloModal} onHide={() => handleClose()}>
+                <Form onSubmit={guardarRegistro}>
+                    <input type="hidden" value={id} name="id"/>
+                    <FloatingLabel
+                        controlId="floatingInput"
+                        label="Nombre"
+                        className="mb-3"
+                    >
+                        <Form.Control type="text" required name="nombre" placeholder="Nombre"/>
+                    </FloatingLabel>
+                    <FloatingLabel controlId="floatingTextarea2" label="Comments">
+                        <Form.Control
+                            name="descripcion"
+                            as="textarea"
+                            required
+                            placeholder="Description del curso"
+                            style={{height: '150px'}}
+                        />
+                    </FloatingLabel>
+                    <Form.Group controlId="formFile" className="mb-3">
+                        <Form.Label>Imagen</Form.Label>
+                        <Form.Control type="file" name="foto" required accept=".png,.jpg"/>
+                    </Form.Group>
+
+                    {
+                        !guardando && (<Button variant="success" type="submit" className={'w-100'}>
+                            Guardar
+                        </Button>)
+                    }
+                    {
+                        guardando &&
+                        <ProgressBar animated now={progreso}/>
+                    }
+                    {
+                        mensaje && (
+                            <Alert key={mensaje.mensaje.length} variant={mensaje.tipo} className={'mt-2'}>
+                                {mensaje.mensaje}
+                            </Alert>)
+                    }
+                </Form>
+            </DialogModal>
         </MainLayout>
     )
 }

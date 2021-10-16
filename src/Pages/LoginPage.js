@@ -36,7 +36,7 @@ const LoginPage = () => {
                         <Form.Control type="password" name="password" placeholder="Password"/>
                     </Form.Group>
                     <Button variant="primary" type="submit">
-                        Submit
+                        Inciar sesion
                     </Button>
                 </Form>
             </Container>

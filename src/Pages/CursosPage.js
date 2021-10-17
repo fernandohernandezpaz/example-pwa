@@ -22,31 +22,10 @@ const CursosPage = () => {
             if (!guardando) {
                 if (navigator.onLine) {
                     CursosService.cursos()
-                        .then(async (response) => {
+                        .then((response) => {
                             if (response.data.length) {
                                 setCursos(response.data);
-                                for (const curso of response.data) {
-                                    const existeCursoDBLocal = await db.cursos.where({
-                                        id_db: curso.id
-                                    }).first();
-
-                                    const registro = {
-                                        id_db: curso.id,
-                                        nombre: curso.nombre,
-                                        slug: curso.slug,
-                                        curso_temas: curso.curso_temas,
-                                        descripcion: curso.descripcion,
-                                        foto: curso.foto,
-                                        syncro: true
-                                    };
-
-                                    if (!existeCursoDBLocal) {
-                                        db.cursos.add(registro);
-                                    } else {
-                                        registro['id'] = existeCursoDBLocal.id;
-                                        db.cursos.put(registro);
-                                    }
-                                }
+                                CursosService.recolectarDatosCursos(response.data)
                             }
                         })
                         .catch(error => console.log('El token no ha sido seteado'))

@@ -23,28 +23,10 @@ const FincaPage = () => {
             if (!guardando) {
                 if (navigator.onLine) {
                     FincasService.fincas()
-                        .then(async (response) => {
+                        .then((response) => {
                             if (response.data.length) {
                                 setFincas(response.data);
-                                for (const finca of response.data) {
-                                    const existeFincaDBLocal = await db.fincas.where({
-                                        id_db: finca.id
-                                    }).first();
-
-                                    const registro = {
-                                        id_db: finca.id,
-                                        hectareas: finca.hectareas,
-                                        foto: finca.foto,
-                                        syncro: true
-                                    };
-
-                                    if (!existeFincaDBLocal) {
-                                        db.fincas.add(registro);
-                                    } else {
-                                        registro['id'] = existeFincaDBLocal.id;
-                                        db.fincas.put(registro);
-                                    }
-                                }
+                                FincasService.recolectarFincas(response.data)
                             }
                         })
                         .catch(error => console.log('El token no ha sido seteado'))
@@ -111,7 +93,7 @@ const FincaPage = () => {
         progresarBarra(80)//80
 
 
-        FincasService.creafFinca(formData)
+        FincasService.crearFinca(formData)
             .then((response) => {
                 progresarBarra(100)//100
                 setTimeout(() => {

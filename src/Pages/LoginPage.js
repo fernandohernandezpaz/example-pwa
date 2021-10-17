@@ -3,6 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import {Button, Container, Form, Col} from 'react-bootstrap';
 import LoginService from '../Services/LoginService';
 import CursosService from '../Services/CursosService';
+import FincasService from '../Services/FincasService';
 import Dexie from 'dexie';
 
 const LoginPage = () => {
@@ -23,37 +24,29 @@ const LoginPage = () => {
         };
         LoginService.login(credentials)
             .then((response) => {
-                if (response.status === 200)  {
+                if (response.status === 200) {
                     db.user.put(response.data);
-                }
-                LoginService.setSession(response.data);
-                CursosService.cursos()
-                    .then(async response => {
-                        for (const curso of response.data) {
-                            const existeCursoDBLocal = await db.cursos.where({
-                                id_db: curso.id
-                            }).first();
-
-                            const registro = {
-                                id_db: curso.id,
-                                nombre: curso.nombre,
-                                slug: curso.slug,
-                                curso_temas: curso.curso_temas,
-                                descripcion: curso.descripcion,
-                                foto: curso.foto,
-                                syncro: true
-                            };
-
-                            if (!existeCursoDBLocal) {
-                                db.cursos.add(registro);
-                            } else {
-                                registro['id'] = existeCursoDBLocal.id;
-                                db.cursos.put(registro);
+                    LoginService.setSession(response.data);
+                    CursosService.cursos()
+                        .then(response => {
+                            if (response.data.length) {
+                                CursosService.recolectarDatosCursos(response.data);
                             }
-                        }
-                    });
-                history.push('/dashboard');
+                        });
 
+                    FincasService.fincas()
+                        .then(response => {
+                            if (response.data.length) {
+                                CursosService.recolectarDatosCursos(response.data);
+                            }
+                        });
+                    history.push('/dashboard');
+                }
+            })
+            .catch(error => {
+                if (error.message === 'Network Error') {
+                    console.log(db.user.first());
+                }
             });
     }
 

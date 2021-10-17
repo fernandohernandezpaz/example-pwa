@@ -15,14 +15,28 @@ const CursosPage = () => {
     const [guardando, setGuardando] = useState(false);
     const [progreso, setProgreso] = useState(10);
     const [mensaje, setMensaje] = useState(null);
-
     db.version(1).stores({
-        cursos: "++id, nombre, descripcion, foto"
+        cursos: "++id, id_db, nombre, slug, descripcion, foto, curso_temas, syncro"
     });
+    const cargarDatos = async () => {
+        return new Promise(async (resolve, reject) => {
+            if (!guardando) {
+                if (!navigator.onLine) {
+                    CursosService.cursos()
+                        .then(response => {
+                            setCursos(response.data);
+                        })
+                        .catch(error => console.log('El token no ha sido seteado'))
 
-    useEffect(async () => {
-        const cursosObtenidos = await db.cursos.toArray();
-        setCursos(cursosObtenidos);
+                } else {
+                    const cursosObtenidos = await db.cursos.toArray();
+                    setCursos(cursosObtenidos);
+                }
+            }
+            resolve(true);
+        })
+    }
+    const sincronizarDatos = () => {
         if (navigator.onLine) {
             db.cursos.each(async function (obj) {
                 if (!obj.id_db) {
@@ -35,13 +49,18 @@ const CursosPage = () => {
                 console.log("Finished.");
             })
         }
-    }, []);
+    }
+
+    useEffect(async () => {
+        cargarDatos();
+        sincronizarDatos();
+    }, [guardando]);
 
     const handleClose = () => setShowModal(false);
     const handleShow = () => setShowModal(true);
     const progresarBarra = (progress) => setProgreso(progress)
     const crearModal = () => {
-        setTituloModal('Crear curso');
+        setTituloModal('Crear documentación');
         handleShow();
     }
 
@@ -62,6 +81,8 @@ const CursosPage = () => {
         const nombre = registrosPendientes ? event.nombre : event.target.nombre.value;
         const descripcion = registrosPendientes ? event.descripcion : event.target.descripcion.value;
         const foto = registrosPendientes ? event.foto : event.target.foto.files[0];
+        const curso_temas = [];
+        const syncro = navigator.onLine;
 
         progresarBarra(25)//25
         formData.append('nombre', nombre)
@@ -89,7 +110,7 @@ const CursosPage = () => {
                     progresarBarra(0)
                 }, 1000);
 
-                if(registrosPendientes) {
+                if (registrosPendientes) {
                     db.cursos.delete(event.id);
                 }
             })
@@ -102,7 +123,9 @@ const CursosPage = () => {
                     db.cursos.put({
                         nombre,
                         descripcion,
-                        foto
+                        foto,
+                        curso_temas,
+                        syncro
                     });
                 }
 
@@ -115,18 +138,6 @@ const CursosPage = () => {
                 }, 3000);
             });
     }
-
-
-    useEffect(() => {
-        if (!guardando) {
-            CursosService.cursos()
-                .then(response => {
-                    setCursos(response.data);
-                })
-                .catch(error => console.log('El token no ha sido seteado'))
-        }
-    }, [guardando]);
-
 
     let rowCursosMarkup = cursos.length > 0 && (
         cursos.map(curso => (
@@ -145,10 +156,8 @@ const CursosPage = () => {
                         <Dropdown.Menu>
                             <Dropdown.Item as="button" eventKey="1"
                                            onClick={() => cargarRegistro(curso.id, 'ver-detalle')}>
-                                Ver detalle
+                                Leer documentación
                             </Dropdown.Item>
-                            <Dropdown.Item as="button" eventKey="2"
-                                           onClick={() => cargarRegistro(curso.id, 'editar')}>Editar</Dropdown.Item>
                         </Dropdown.Menu>
                     </Dropdown>
                 </td>
@@ -160,17 +169,17 @@ const CursosPage = () => {
         <MainLayout>
             <Row>
                 <Col xs="12" md="6" lg="6">
-                    <h1>Lista de Cursos</h1>
+                    <h1>Lista de Documentos</h1>
                 </Col>
                 <Col xs="12" md="6" lg="6" className={'text-end'}>
-                    <Button variant="success" onClick={() => crearModal()}>Crear Curso</Button>
+                    <Button variant="success" onClick={() => crearModal()}>Crear Documentación</Button>
                 </Col>
                 <Col xs="12" md="12" lg="12">
                     <Table striped bordered hover>
                         <thead>
                         <tr>
                             <th>Id</th>
-                            <th>Curso</th>
+                            <th>Documento</th>
                             <th>Descripción</th>
                             <th>Foto</th>
                             <th>Acciones</th>

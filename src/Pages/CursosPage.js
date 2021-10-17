@@ -10,7 +10,6 @@ const CursosPage = () => {
     let db = new Dexie(process.env.REACT_APP_DB_NAME);
     const [cursos, setCursos] = useState([]);
     const [tituloModal, setTituloModal] = useState('');
-    const [id, setId] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [guardando, setGuardando] = useState(false);
     const [progreso, setProgreso] = useState(10);
@@ -21,10 +20,32 @@ const CursosPage = () => {
     const cargarDatos = async () => {
         return new Promise(async (resolve, reject) => {
             if (!guardando) {
-                if (!navigator.onLine) {
+                if (navigator.onLine) {
                     CursosService.cursos()
-                        .then(response => {
+                        .then(async (response) => {
                             setCursos(response.data);
+                            for (const curso of response.data) {
+                                const existeCursoDBLocal = await db.cursos.where({
+                                    id_db: curso.id
+                                }).first();
+
+                                const registro = {
+                                    id_db: curso.id,
+                                    nombre: curso.nombre,
+                                    slug: curso.slug,
+                                    curso_temas: curso.curso_temas,
+                                    descripcion: curso.descripcion,
+                                    foto: curso.foto,
+                                    syncro: true
+                                };
+
+                                if (!existeCursoDBLocal) {
+                                    db.cursos.add(registro);
+                                } else {
+                                    registro['id'] = existeCursoDBLocal.id;
+                                    db.cursos.put(registro);
+                                }
+                            }
                         })
                         .catch(error => console.log('El token no ha sido seteado'))
 
@@ -194,7 +215,6 @@ const CursosPage = () => {
 
             <DialogModal show={showModal} title={tituloModal} onHide={() => handleClose()}>
                 <Form onSubmit={guardarRegistro}>
-                    <input type="hidden" value={id} name="id"/>
                     <FloatingLabel
                         controlId="floatingInput"
                         label="Nombre"

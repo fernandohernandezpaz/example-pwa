@@ -27,9 +27,18 @@ const Navbar = () => {
                 {
                     LoginService.isAuthenticated() && (
                         <Nav.Item>
-                            <Nav.Link as={Link} to="/cursos">Cursos</Nav.Link>
+                            <Nav.Link as={Link} to="/documentacion">Documentacion</Nav.Link>
                         </Nav.Item>
                     )
+
+                }
+                {
+                    LoginService.isAuthenticated() && (
+                        <Nav.Item>
+                            <Nav.Link as={Link} to="/fincas">Fincas</Nav.Link>
+                        </Nav.Item>
+                    )
+
                 }
 
                 {loginOpcion}

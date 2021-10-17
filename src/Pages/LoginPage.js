@@ -13,7 +13,8 @@ const LoginPage = () => {
 
         db.version(1).stores({
             user: "++id, username, token, email",
-            cursos: "++id, id_db, nombre, slug, descripcion, foto, curso_temas, syncro"
+            cursos: "++id, id_db, nombre, slug, descripcion, foto, curso_temas, syncro",
+            fincas: '++id, id_db, hectareas, user_id, activo, foto, syncro'
         });
 
         const credentials = {

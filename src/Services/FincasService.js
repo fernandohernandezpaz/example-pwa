@@ -1,17 +1,17 @@
 import request from '../Utils/Request';
 
-class CursosService {
+class FincasService {
 
-    cursos() {
+    fincas() {
         return request({
-            url: '/cursos/',
+            url: '/fincas/',
             method: 'get'
         });
     }
 
-    crearCurso(data) {
+    creafFinca(data) {
         return request({
-            url: '/crear/curso/',
+            url: '/crear/finca/',
             method: 'post',
             data: data
         });
@@ -19,4 +19,4 @@ class CursosService {
 
 }
 
-export default new CursosService();
+export default new FincasService();

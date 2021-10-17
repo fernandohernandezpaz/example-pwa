@@ -1,50 +1,48 @@
 import {useState, useEffect} from 'react';
 import MainLayout from '../Components/MainLayout';
-import {Table, Image, Dropdown, Button, Row, Col, Form} from 'react-bootstrap';
+import {Card, Button, Row, Col, Form} from 'react-bootstrap';
 import {FloatingLabel, ProgressBar, Alert} from 'react-bootstrap';
-import CursosService from '../Services/CursosService';
+import FincasService from '../Services/FincasService';
 import DialogModal from '../Components/DialogModal'
 import Dexie from 'dexie';
+import LoginService from "../Services/LoginService";
 
-const CursosPage = () => {
+const FincaPage = () => {
     let db = new Dexie(process.env.REACT_APP_DB_NAME);
-    const [cursos, setCursos] = useState([]);
+    const [fincas, setFincas] = useState([]);
     const [tituloModal, setTituloModal] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [guardando, setGuardando] = useState(false);
     const [progreso, setProgreso] = useState(10);
     const [mensaje, setMensaje] = useState(null);
     db.version(1).stores({
-        cursos: "++id, id_db, nombre, slug, descripcion, foto, curso_temas, syncro"
+        fincas: "++id, id_db, hectareas, user_id, activo, foto, syncro"
     });
     const cargarDatos = () => {
         return new Promise(async (resolve, reject) => {
             if (!guardando) {
                 if (navigator.onLine) {
-                    CursosService.cursos()
+                    FincasService.fincas()
                         .then(async (response) => {
                             if (response.data.length) {
-                                setCursos(response.data);
-                                for (const curso of response.data) {
-                                    const existeCursoDBLocal = await db.cursos.where({
-                                        id_db: curso.id
+                                setFincas(response.data);
+                                for (const finca of response.data) {
+                                    const existeFincaDBLocal = await db.fincas.where({
+                                        id_db: finca.id
                                     }).first();
 
                                     const registro = {
-                                        id_db: curso.id,
-                                        nombre: curso.nombre,
-                                        slug: curso.slug,
-                                        curso_temas: curso.curso_temas,
-                                        descripcion: curso.descripcion,
-                                        foto: curso.foto,
+                                        id_db: finca.id,
+                                        hectareas: finca.hectareas,
+                                        foto: finca.foto,
                                         syncro: true
                                     };
 
-                                    if (!existeCursoDBLocal) {
-                                        db.cursos.add(registro);
+                                    if (!existeFincaDBLocal) {
+                                        db.fincas.add(registro);
                                     } else {
-                                        registro['id'] = existeCursoDBLocal.id;
-                                        db.cursos.put(registro);
+                                        registro['id'] = existeFincaDBLocal.id;
+                                        db.fincas.put(registro);
                                     }
                                 }
                             }
@@ -52,8 +50,8 @@ const CursosPage = () => {
                         .catch(error => console.log('El token no ha sido seteado'))
 
                 } else {
-                    const cursosObtenidos = await db.cursos.toArray();
-                    setCursos(cursosObtenidos);
+                    const fincasObtenidas = await db.fincas.toArray();
+                    setFincas(fincasObtenidas);
                 }
             }
             resolve(true);
@@ -61,7 +59,7 @@ const CursosPage = () => {
     }
     const sincronizarDatos = () => {
         if (navigator.onLine) {
-            db.cursos.each(async function (obj) {
+            db.fincas.each(async function (obj) {
                 if (!obj.id_db) {
                     const record = obj;
                     await guardarRegistro(record, true);
@@ -83,13 +81,8 @@ const CursosPage = () => {
     const handleShow = () => setShowModal(true);
     const progresarBarra = (progress) => setProgreso(progress)
     const crearModal = () => {
-        setTituloModal('Crear documentación');
+        setTituloModal('RegistrarGranja');
         handleShow();
-    }
-
-    const cargarRegistro = (id, accion = null) => {
-        handleShow();
-        console.log(id, accion);
     }
 
     const guardarRegistro = (event, registrosPendientes = false) => {
@@ -101,27 +94,24 @@ const CursosPage = () => {
 
         progresarBarra(20)// 20
         const formData = new FormData();
-        const nombre = registrosPendientes ? event.nombre : event.target.nombre.value;
-        const descripcion = registrosPendientes ? event.descripcion : event.target.descripcion.value;
+        const hectareas = registrosPendientes ? event.hectareas : event.target.hectareas.value;
+        const user_id = LoginService.getUserId();
         const foto = registrosPendientes ? event.foto : event.target.foto.files[0];
-        const curso_temas = [];
+        let activo = registrosPendientes ? event.activo : event.target.activo.value;
+        activo = (activo === 'on' || activo === true)
         const syncro = navigator.onLine;
 
         progresarBarra(25)//25
-        formData.append('nombre', nombre)
-        formData.append('descripcion', descripcion)
+        formData.append('usuario', user_id)
+        formData.append('hectareas', hectareas)
+        formData.append('activo', activo)
         formData.append('foto', foto)
 
-        progresarBarra(55)//55
-        formData.append(
-            'fecha_desde', `2021-${Math.floor(Math.random() * 11) + 1}-${Math.floor(Math.random() * 28) + 1}`
-        )
-        progresarBarra(80)//80
-        formData.append(
-            'fecha_hasta', `2021-${Math.floor(Math.random() * 11) + 1}-${Math.floor(Math.random() * 28) + 1}`
-        );
 
-        CursosService.crearCurso(formData)
+        progresarBarra(80)//80
+
+
+        FincasService.creafFinca(formData)
             .then((response) => {
                 progresarBarra(100)//100
                 setTimeout(() => {
@@ -134,7 +124,7 @@ const CursosPage = () => {
                 }, 1000);
 
                 if (registrosPendientes) {
-                    db.cursos.delete(event.id);
+                    db.fincas.delete(event.id);
                 }
             })
             .catch(error => {
@@ -143,11 +133,12 @@ const CursosPage = () => {
 
                 handleClose();
                 if (!navigator.onLine && !registrosPendientes) {
-                    db.cursos.put({
-                        nombre,
-                        descripcion,
+                    console.log(navigator.onLine, !registrosPendientes);
+                    db.fincas.put({
+                        hectareas,
+                        user_id,
                         foto,
-                        curso_temas,
+                        activo,
                         syncro
                     });
                 }
@@ -162,29 +153,20 @@ const CursosPage = () => {
             });
     }
 
-    let rowCursosMarkup = cursos.length > 0 && (
-        cursos.map(curso => (
-            <tr key={curso.id}>
-                <td>{curso.id}</td>
-                <td>{curso.nombre}</td>
-                <td>{curso.descripcion}</td>
-                <td><Image style={{width: '200px'}} src={`${process.env.REACT_APP_API_DOMAIN}${curso.foto}`} rounded/>
-                </td>
-                <td>
-                    <Dropdown>
-                        <Dropdown.Toggle variant="primary" id="dropdown-basic">
-                            Acciones
-                        </Dropdown.Toggle>
-
-                        <Dropdown.Menu>
-                            <Dropdown.Item as="button" eventKey="1"
-                                           onClick={() => cargarRegistro(curso.id, 'ver-detalle')}>
-                                Leer documentación
-                            </Dropdown.Item>
-                        </Dropdown.Menu>
-                    </Dropdown>
-                </td>
-            </tr>
+    let cardFincas = fincas.length > 0 && (
+        fincas.map(finca => (
+            <Col xs="12" md="4" lg="3">
+                <Card key={finca.id} style={{width: '18rem'}}>
+                    <Card.Img variant="top" src={`${process.env.REACT_APP_API_DOMAIN}${finca.foto}`}/>
+                    <Card.Body>
+                        <Card.Title>Granja #{finca.id}</Card.Title>
+                        <Card.Text>
+                            Granja de {finca.hectareas} hectareas.
+                        </Card.Text>
+                        <Card.Text>Estado: {finca.activo ? 'Activa' : 'Inactiv'}</Card.Text>
+                    </Card.Body>
+                </Card>
+            </Col>
         ))
     )
 
@@ -192,26 +174,15 @@ const CursosPage = () => {
         <MainLayout>
             <Row>
                 <Col xs="12" md="6" lg="6">
-                    <h1>Lista de Documentos</h1>
+                    <h1>Mis granjas</h1>
                 </Col>
                 <Col xs="12" md="6" lg="6" className={'text-end'}>
-                    <Button variant="success" onClick={() => crearModal()}>Crear Documentación</Button>
+                    <Button variant="success" onClick={() => crearModal()}>Registrar granja</Button>
                 </Col>
                 <Col xs="12" md="12" lg="12">
-                    <Table striped bordered hover>
-                        <thead>
-                        <tr>
-                            <th>Id</th>
-                            <th>Documento</th>
-                            <th>Descripción</th>
-                            <th>Foto</th>
-                            <th>Acciones</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {rowCursosMarkup}
-                        </tbody>
-                    </Table>
+                    <Row>
+                        {cardFincas}
+                    </Row>
                 </Col>
             </Row>
 
@@ -219,22 +190,21 @@ const CursosPage = () => {
                 <Form onSubmit={guardarRegistro}>
                     <FloatingLabel
                         controlId="floatingInput"
-                        label="Nombre"
+                        label="Hectareas de la granja"
                         className="mb-3"
                     >
-                        <Form.Control type="text" required name="nombre" placeholder="Nombre"/>
+                        <Form.Control type="number" required name="hectareas" placeholder="Hectareas"/>
                     </FloatingLabel>
-                    <FloatingLabel controlId="floatingTextarea2" label="Comments">
-                        <Form.Control
-                            name="descripcion"
-                            as="textarea"
-                            required
-                            placeholder="Description del curso"
-                            style={{height: '150px'}}
+                    <div key={`default-checkbox`} className="mb-3">
+                        <Form.Check
+                            type="checkbox"
+                            name="activo"
+                            id="checkbox_activo"
+                            label="¿Granja está en funcionamiento?"
                         />
-                    </FloatingLabel>
+                    </div>
                     <Form.Group controlId="formFile" className="mb-3">
-                        <Form.Label>Imagen</Form.Label>
+                        <Form.Label>Foto de la granja</Form.Label>
                         <Form.Control type="file" name="foto" required accept=".png,.jpg"/>
                     </Form.Group>
 
@@ -259,4 +229,4 @@ const CursosPage = () => {
     )
 }
 
-export default CursosPage;
+export default FincaPage;

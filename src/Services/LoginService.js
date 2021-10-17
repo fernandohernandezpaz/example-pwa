@@ -30,6 +30,15 @@ class LoginService {
         return null
     }
 
+    getUserId() {
+        const data = this.getSession();
+
+        if (data) {
+            return data['id']
+        }
+        return null
+    }
+
     isAuthenticated() {
         return this.getSession() !== null;
     }

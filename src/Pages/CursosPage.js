@@ -20,24 +20,21 @@ const CursosPage = () => {
         cursos: "++id, nombre, descripcion, foto"
     });
 
-    /*console.log(navigator.onLine, 'Estado navegador');
-    if ('storage' in navigator && 'estimate' in navigator.storage) {
-        navigator.storage.estimate()
-            .then(function(estimate){
-                console.log(`Using ${estimate.usage} out of ${estimate.quota} bytes.`);
-            });
-    }*/
-
     useEffect(async () => {
         const cursosObtenidos = await db.cursos.toArray();
-         setCursos(cursosObtenidos);
-        // if(navigator.onLine) {
-        //     db.curso.each(function (obj) {
-        //         // console.log(obj.nombre, JSON.stringify(obj));
-        //     }).then(function () {
-        //         console.log("Finished.");
-        //     })
-        // }
+        setCursos(cursosObtenidos);
+        if (navigator.onLine) {
+            db.cursos.each(async function (obj) {
+                if (!obj.id_db) {
+                    const record = obj;
+                    await guardarRegistro(record, true);
+                } else {
+                    console.log('Np ...')
+                }
+            }).then(function () {
+                console.log("Finished.");
+            })
+        }
     }, []);
 
     const handleClose = () => setShowModal(false);
@@ -53,15 +50,18 @@ const CursosPage = () => {
         console.log(id, accion);
     }
 
-    const guardarRegistro = (event) => {
-        console.log(event);
-        event.preventDefault();
+    const guardarRegistro = (event, registrosPendientes = false) => {
+        if (!registrosPendientes) {
+            event.preventDefault();
+        }
+
         setGuardando(true);
+
         progresarBarra(20)// 20
         const formData = new FormData();
-        const nombre = event.target.nombre.value;
-        const descripcion = event.target.descripcion.value;
-        const foto = event.target.foto.files[0];
+        const nombre = registrosPendientes ? event.nombre : event.target.nombre.value;
+        const descripcion = registrosPendientes ? event.descripcion : event.target.descripcion.value;
+        const foto = registrosPendientes ? event.foto : event.target.foto.files[0];
 
         progresarBarra(25)//25
         formData.append('nombre', nombre)
@@ -88,18 +88,23 @@ const CursosPage = () => {
                     setGuardando(false);
                     progresarBarra(0)
                 }, 1000);
+
+                if(registrosPendientes) {
+                    db.cursos.delete(event.id);
+                }
             })
             .catch(error => {
                 setGuardando(false);
                 progresarBarra(0); //100
 
                 handleClose();
-                //
-                // db.cursos.put({
-                //     nombre,
-                //     descripcion,
-                //     foto
-                // });
+                if (!navigator.onLine && !registrosPendientes) {
+                    db.cursos.put({
+                        nombre,
+                        descripcion,
+                        foto
+                    });
+                }
 
                 setMensaje({
                     mensaje: 'Error al guardar',

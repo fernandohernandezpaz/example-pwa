@@ -1,14 +1,15 @@
 let cacheData = 'appV1';
+let urlsToCache = [
+    'static/js/bundle.js',
+    'static/js/vendors~main.chunk.js',
+    'static/js/main.chunk.js',
+    'index.html',
+];
 
 this.addEventListener('install', (event) => {
     event.waitUntil(
         cacheData.open(cacheData).then(cache => {
-            cache.addAll([
-                'static/js/bundle.js',
-                'static/js/vendors~main.chunk.js',
-                'static/js/main.chunk.js',
-                '/index.html',
-            ]);
+            cache.addAll(urlsToCache);
         })
     )
 })
@@ -20,5 +21,20 @@ this.addEventListener('fetch', (event) => {
                 return resp
             }
         })
+    )
+});
+
+// Activate the SW
+this.addEventListener('activate', (event) => {
+    const cacheWhitelist = [];
+    cacheWhitelist.push(cacheData);
+    event.waitUntil(
+        caches.keys().then((cacheNames) => Promise.all(
+            cacheNames.map((cacheName) => {
+                if (!cacheWhitelist.includes(cacheName)) {
+                    return caches.delete(cacheName);
+                }
+            })
+        ))
     )
 });

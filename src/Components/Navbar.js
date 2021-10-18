@@ -5,8 +5,22 @@ import LoginService from "../Services/LoginService";
 const Navbar = () => {
     let history = useHistory();
     const logOutHandler = () => {
-        LoginService.destroySession();
-        history.push('/');
+        if (navigator.onLine) {
+            LoginService.destroySession();
+            history.push('/');
+        } else {
+            Notification.requestPermission()
+                .then((result) => {
+                    const notifTitle = `ADVERTENCIA`;
+                    const notifBody = `Hola, Aun hay tareas pendientes de procesa. Solo podra cerra sesion cuando tengas conexión`;
+
+                    const options = {
+                        body: notifBody,
+                        icon: null
+                    };
+                    new Notification(notifTitle, options);
+                });
+        }
     }
     const loginOpcion = !LoginService.isAuthenticated() && (<Nav.Item>
         <Nav.Link as={Link} to="/">Login</Nav.Link>

@@ -16,7 +16,8 @@ this.addEventListener('install', (event) => {
 
 this.addEventListener('fetch', (event) => {
     event.respondWith(
-        caches.match(event.request).then(()=> {
+        caches.match(event.request).then(response => {
+            console.log(response);
             return fetch(event.request)
                 .catch(() => caches.match('index.html'))
         })

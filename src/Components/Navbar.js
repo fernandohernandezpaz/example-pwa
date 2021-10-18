@@ -41,7 +41,7 @@ const Navbar = () => {
                 {
                     LoginService.isAuthenticated() && (
                         <Nav.Item>
-                            <Nav.Link as={Link} to="/documentacion">Documentacion</Nav.Link>
+                            <Nav.Link as={Link} to="/documentaciones/">Documentacion</Nav.Link>
                         </Nav.Item>
                     )
 
@@ -49,7 +49,7 @@ const Navbar = () => {
                 {
                     LoginService.isAuthenticated() && (
                         <Nav.Item>
-                            <Nav.Link as={Link} to="/fincas">Fincas</Nav.Link>
+                            <Nav.Link as={Link} to="/fincas/">Fincas</Nav.Link>
                         </Nav.Item>
                     )
 

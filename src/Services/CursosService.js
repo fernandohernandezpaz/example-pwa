@@ -23,6 +23,10 @@ class CursosService {
         db.version(1).stores({
             cursos: "++id, id_db, nombre, slug, descripcion, foto, curso_temas, syncro"
         });
+        if (navigator.onLine) {
+            db.cursos.where('syncro').equals('true').delete();
+        }
+
         for (const curso of data) {
             const existeCursoDBLocal = await db.cursos.where({
                 id_db: curso.id
@@ -35,7 +39,7 @@ class CursosService {
                 curso_temas: curso.curso_temas,
                 descripcion: curso.descripcion,
                 foto: curso.foto,
-                syncro: true
+                syncro: 'true'
             };
 
             if (!existeCursoDBLocal) {

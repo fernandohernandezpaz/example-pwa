@@ -3,7 +3,7 @@ import LoginPage from './Pages/LoginPage';
 import DashboardPage from './Pages/DashboardPage';
 import CursosPage from './Pages/CursosPage';
 import FincaPage from './Pages/FincaPage';
-import TestPage from './Pages/TestPage';
+import DetalleDocumentoPage from './Pages/DetalleDocumentoPage';
 
 import {BrowserRouter as Router, Switch, Route} from 'react-router-dom';
 
@@ -18,9 +18,9 @@ function App() {
                         <Switch>
                             <Route path="/" exact component={LoginPage}/>
                             <Route path="/dashboard" component={DashboardPage}/>
-                            <Route path="/documentacion" component={CursosPage}/>
+                            <Route path="/documentaciones/" component={CursosPage}/>
+                            <Route path="/documentacion/:temaSlug" component={DetalleDocumentoPage}/>
                             <Route path="/fincas" component={FincaPage}/>
-                            <Route path="/test" component={TestPage}/>
                         </Switch>
                     </Row>
                 </Container>

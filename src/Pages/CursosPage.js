@@ -1,10 +1,12 @@
 import {useState, useEffect} from 'react';
 import MainLayout from '../Components/MainLayout';
-import {Table, Image, Dropdown, Button, Row, Col, Form} from 'react-bootstrap';
+import {Table, Image, Button, Row, Col, Form} from 'react-bootstrap';
 import {FloatingLabel, ProgressBar, Alert} from 'react-bootstrap';
 import CursosService from '../Services/CursosService';
 import DialogModal from '../Components/DialogModal'
+import {Link} from 'react-router-dom';
 import Dexie from 'dexie';
+
 
 const CursosPage = () => {
     let db = new Dexie(process.env.REACT_APP_DB_NAME);
@@ -65,11 +67,11 @@ const CursosPage = () => {
         setTituloModal('Crear documentación');
         handleShow();
     }
-
-    const cargarRegistro = (id, accion = null) => {
-        handleShow();
-        console.log(id, accion);
-    }
+    //
+    // const cargarRegistro = (id, accion = null) => {
+    //     handleShow();
+    //     console.log(id, accion);
+    // }
 
     const guardarRegistro = (event, registrosPendientes = false) => {
         if (!registrosPendientes) {
@@ -84,7 +86,7 @@ const CursosPage = () => {
         const descripcion = registrosPendientes ? event.descripcion : event.target.descripcion.value;
         const foto = registrosPendientes ? event.foto : event.target.foto.files[0];
         const curso_temas = [];
-        const syncro = navigator.onLine;
+        const syncro = String(navigator.onLine);
 
         progresarBarra(25)//25
         formData.append('nombre', nombre)
@@ -150,18 +152,11 @@ const CursosPage = () => {
                 <td><Image style={{width: '200px'}} src={`${process.env.REACT_APP_API_DOMAIN}${curso.foto}`} rounded/>
                 </td>
                 <td>
-                    <Dropdown>
-                        <Dropdown.Toggle variant="primary" id="dropdown-basic">
-                            Acciones
-                        </Dropdown.Toggle>
-
-                        <Dropdown.Menu>
-                            <Dropdown.Item as="button" eventKey="1"
-                                           onClick={() => cargarRegistro(curso.id, 'ver-detalle')}>
-                                Leer documentación
-                            </Dropdown.Item>
-                        </Dropdown.Menu>
-                    </Dropdown>
+                    {
+                        curso.slug !== null && curso.slug !== undefined ? <Link to={`/documentacion/${curso.slug}`}>
+                            Leer documentación
+                        </Link> : null
+                    }
                 </td>
             </tr>
         ))

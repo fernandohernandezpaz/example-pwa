@@ -1,23 +1,14 @@
 import Dexie from 'dexie';
 
-// Database handles all database interactions for the web app.
-class DB extends Dexie {
-    // our Database constructor sets up an IndexedDB database with a
-    // sticky notes object store, titled "notes".
-    constructor() {
-        super(process.env.REACT_APP_DB_NAME)
-    }
 
-    createTable(tableName, fields) {
-        let table = {};
-        table[tableName] = fields;
-        this.version(1).stores(table);
-    }
+const VERSION = Number(process.env.REACT_APP_DB_NAME_VERSION ?? 1);
+const db = new Dexie(process.env.REACT_APP_DB_NAME);
 
-    getTable(tableName) {
-        return this[tableName];
-    }
+db.version(VERSION).stores({
+    user: "++id, username, token, email",
+    cursos: "++id, id_db, nombre, slug, descripcion, foto, curso_temas, syncro",
+    fincas: '++id, id_db, hectareas, user_id, activo, foto, syncro',
+    media: '++id, id, binary_file'
+});
 
-}
-
-export default new DB();
+export default db;

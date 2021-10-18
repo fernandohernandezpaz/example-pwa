@@ -3,7 +3,7 @@ import MainLayout from '../Components/MainLayout';
 import MediaServices from "../Services/MediaServices";
 
 const DashboardPage = () => {
-    MediaServices.guardarMedia();
+    // MediaServices.guardarMedia();
     // MediaServices.obtenerURls()
     //     .then(response => {
     //         for(const url of response) {

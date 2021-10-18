@@ -5,20 +5,17 @@ import {FloatingLabel, ProgressBar, Alert} from 'react-bootstrap';
 import CursosService from '../Services/CursosService';
 import DialogModal from '../Components/DialogModal'
 import {Link} from 'react-router-dom';
-import Dexie from 'dexie';
+import db from "../Utils/DB";
 
 
 const CursosPage = () => {
-    let db = new Dexie(process.env.REACT_APP_DB_NAME);
     const [cursos, setCursos] = useState([]);
     const [tituloModal, setTituloModal] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [guardando, setGuardando] = useState(false);
     const [progreso, setProgreso] = useState(10);
     const [mensaje, setMensaje] = useState(null);
-    db.version(1).stores({
-        cursos: "++id, id_db, nombre, slug, descripcion, foto, curso_temas, syncro"
-    });
+
     const cargarDatos = () => {
         return new Promise(async (resolve, reject) => {
             if (!guardando) {

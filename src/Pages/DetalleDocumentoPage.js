@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from 'react'
 import MainLayout from "../Components/MainLayout";
-import {Image, Button, Row, Col, Container} from 'react-bootstrap';
-import Dexie from "dexie";
+import {Image, Row, Col, Container} from 'react-bootstrap';
 import ReactPaginate from 'react-paginate';
+import db from "../Utils/DB";
 
 const DetalleDocumentoPage = (props) => {
     const [curso, setCurso] = useState(null);
@@ -11,10 +11,6 @@ const DetalleDocumentoPage = (props) => {
     const [cantidadTemas, setCantidadTemas] = useState(0);
 
     const slug = props.match.params['temaSlug'];
-    let db = new Dexie(process.env.REACT_APP_DB_NAME);
-    db.version(1).stores({
-        cursos: "++id, id_db, nombre, slug, descripcion, foto, curso_temas, syncro"
-    });
 
     useEffect(async () => {
         const findRecord = async (slug) => {

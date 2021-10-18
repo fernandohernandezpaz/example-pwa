@@ -4,20 +4,16 @@ import {Card, Button, Row, Col, Form} from 'react-bootstrap';
 import {FloatingLabel, ProgressBar, Alert} from 'react-bootstrap';
 import FincasService from '../Services/FincasService';
 import DialogModal from '../Components/DialogModal'
-import Dexie from 'dexie';
 import LoginService from "../Services/LoginService";
+import db from "../Utils/DB";
 
 const FincaPage = () => {
-    let db = new Dexie(process.env.REACT_APP_DB_NAME);
     const [fincas, setFincas] = useState([]);
     const [tituloModal, setTituloModal] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [guardando, setGuardando] = useState(false);
     const [progreso, setProgreso] = useState(10);
     const [mensaje, setMensaje] = useState(null);
-    db.version(1).stores({
-        fincas: "++id, id_db, hectareas, user_id, activo, foto, syncro"
-    });
     const cargarDatos = () => {
         return new Promise(async (resolve, reject) => {
             if (!guardando) {
@@ -137,8 +133,8 @@ const FincaPage = () => {
 
     let cardFincas = fincas.length > 0 && (
         fincas.map(finca => (
-            <Col xs="12" md="4" lg="3">
-                <Card key={finca.id} style={{width: '18rem'}}>
+            <Col xs="12" md="4" lg="3" key={`col-${finca.id}`}>
+                <Card key={finca.id} style={{width: '18rem'}} key={`card-${finca.id}`}>
                     <Card.Img variant="top" src={`${process.env.REACT_APP_API_DOMAIN}${finca.foto}`}/>
                     <Card.Body>
                         <Card.Title>Granja #{finca.id}</Card.Title>

@@ -16,18 +16,16 @@ this.addEventListener('install', (event) => {
 
 this.addEventListener('fetch', (event) => {
     event.respondWith(
-        caches.match(event.request).then(resp => {
-            if (resp) {
-                return resp
-            }
+        caches.match(event.request).then(()=> {
+            return fetch(event.request)
+                .catch(() => caches.match('index.html'))
         })
     )
 });
 
 // Activate the SW
 this.addEventListener('activate', (event) => {
-    const cacheWhitelist = [];
-    cacheWhitelist.push(cacheData);
+    const cacheWhitelist = ['cacheData'];
     event.waitUntil(
         caches.keys().then((cacheNames) => Promise.all(
             cacheNames.map((cacheName) => {

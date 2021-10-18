@@ -2,11 +2,15 @@ import React, {useEffect, useState} from 'react'
 import MainLayout from "../Components/MainLayout";
 import { Image, Button, Row, Col} from 'react-bootstrap';
 import Dexie from "dexie";
+import ReactPaginate from 'react-paginate';
 
 const DetalleDocumentoPage = (props) => {
     const [curso, setCurso] = useState({});
+    const [cantidadTemas, setCantidadTemas] = useState(0);
+
     const slug = props.match.params['temaSlug'];
     let db = new Dexie(process.env.REACT_APP_DB_NAME);
+
     db.version(1).stores({
         cursos: "++id, id_db, nombre, slug, descripcion, foto, curso_temas, syncro"
     });
@@ -26,8 +30,14 @@ const DetalleDocumentoPage = (props) => {
 
 
         const record = await findRecord(slug);
-        setCurso(record)
-    }, [])
+
+        setCantidadTemas(record.curso_temas.length);
+        setCurso(record);
+    }, []);
+
+   const handlePageClick = (data) => {
+        let selected = data.selected;
+    };
 
     console.log(curso);
     const detalleCurso = curso!== null && (<>
@@ -44,6 +54,24 @@ const DetalleDocumentoPage = (props) => {
     return (
         <MainLayout>
             {detalleCurso}
+            <ReactPaginate
+                previousLabel={'Anterior'}
+                nextLabel={'Siguiente'}
+                breakLabel={'...'}
+                pageCount={cantidadTemas}
+                onPageChange={handlePageClick}
+                containerClassName={'pagination'}
+                pageClassName={'page-item'}
+                pageLinkClassName={'page-link'}
+                previousClassName={'page-item'}
+                previousLinkClassName={'page-link'}
+                nextLinkClassName={'page-link'}
+                nexClassName={'page-item'}
+                breakClassName={'break-me'}
+                marginPagesDisplayed={2}
+                pageRangeDisplayed={5}
+                activeClassName={'active'}
+            />
         </MainLayout>
     )
 }

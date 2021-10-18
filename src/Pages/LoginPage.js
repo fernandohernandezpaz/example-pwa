@@ -4,23 +4,36 @@ import {Button, Container, Form, Col} from 'react-bootstrap';
 import LoginService from '../Services/LoginService';
 import CursosService from '../Services/CursosService';
 import FincasService from '../Services/FincasService';
-import { useSelector, useDispatch } from 'react-redux'
-import { setUserData } from '../features/login/userSlice'
-import Dexie from 'dexie';
+import {useSelector, useDispatch} from 'react-redux'
+import {setUserData} from '../features/login/userSlice'
+import db from "../Utils/DB";
 
 const LoginPage = () => {
     let history = useHistory();
     const user = useSelector(state => state['user'])
-    const dispatch = useDispatch()
+    const dispatch = useDispatch();
+
+    const redireccionarDashboard = async () => {
+        if (LoginService.isAuthenticated() && navigator.onLine) {
+            history.push('/dashboard');
+        } else if (navigator.onLine && !LoginService.isAuthenticated()) {
+            return false;
+        } else if (!navigator.onLine) {
+            const usuarios = await db.user.toArray();
+            if (usuarios.length) {
+                LoginService.setSession(usuarios[0]);
+                history.push('/dashboard');
+            }
+        }
+    }
+
+    window.addEventListener('load', async function () {
+        if (document.readyState === 'complete') {
+            redireccionarDashboard();
+        }
+    })
     const initSession = (event) => {
         event.preventDefault();
-        let db = new Dexie(process.env.REACT_APP_DB_NAME);
-
-        db.version(1).stores({
-            user: "++id, username, token, email",
-            cursos: "++id, id_db, nombre, slug, descripcion, foto, curso_temas, syncro",
-            fincas: '++id, id_db, hectareas, user_id, activo, foto, syncro'
-        });
 
         const credentials = {
             username: event.target.username.value,
@@ -42,7 +55,7 @@ const LoginPage = () => {
                     FincasService.fincas()
                         .then(response => {
                             if (response.data.length) {
-                                CursosService.recolectarDatosCursos(response.data);
+                                FincasService.recolectarFincas(response.data);
                             }
                         });
                     history.push('/dashboard');

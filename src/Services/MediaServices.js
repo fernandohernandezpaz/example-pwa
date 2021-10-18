@@ -13,10 +13,13 @@ class MediaServices {
 
     guardarMedia() {
         this.obtenerURls()
-            .then(async (response) => {
+            .then((response) => {
                 // console.log(response.length);
                 for (const url of response) {
-                    console.log(await this.consumirMedia(url));
+                    // console.log(await );
+                    this.consumirMedia(url).then(response => {
+                        console.log(response);
+                    })
                     // fetch(url)
                     //     .then(response => response.blob())
                     //     .then(blob => new Promise((resolve, reject) => {

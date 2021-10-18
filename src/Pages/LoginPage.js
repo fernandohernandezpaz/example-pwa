@@ -4,10 +4,14 @@ import {Button, Container, Form, Col} from 'react-bootstrap';
 import LoginService from '../Services/LoginService';
 import CursosService from '../Services/CursosService';
 import FincasService from '../Services/FincasService';
+import { useSelector, useDispatch } from 'react-redux'
+import { setUserData } from '../features/login/userSlice'
 import Dexie from 'dexie';
 
 const LoginPage = () => {
     let history = useHistory();
+    const user = useSelector(state => state['user'])
+    const dispatch = useDispatch()
     const initSession = (event) => {
         event.preventDefault();
         let db = new Dexie(process.env.REACT_APP_DB_NAME);
@@ -27,6 +31,7 @@ const LoginPage = () => {
                 if (response.status === 200) {
                     db.user.put(response.data);
                     LoginService.setSession(response.data);
+                    dispatch(setUserData(response.data))
                     CursosService.cursos()
                         .then(response => {
                             if (response.data.length) {

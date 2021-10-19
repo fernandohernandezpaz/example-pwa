@@ -34,7 +34,14 @@ const LoginPage = () => {
     })
     const initSession = (event) => {
         event.preventDefault();
-
+        const VERSION = Number(process.env.REACT_APP_DB_NAME_VERSION ?? 1);
+        db.version(VERSION).stores({
+            user: "++id, username, token, email",
+            cursos: "++id, id_db, nombre, slug, descripcion, foto, curso_temas, syncro",
+            fincas: '++id, id_db, hectareas, user_id, activo, foto, syncro',
+            media: '++id, id, binary_file',
+            documentacionLeida: '++id, curso_id, tema_id, timestamp, posicion'
+        });
         const credentials = {
             username: event.target.username.value,
             password: event.target.password.value

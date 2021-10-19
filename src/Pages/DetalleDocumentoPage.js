@@ -53,9 +53,24 @@ const DetalleDocumentoPage = (props) => {
         }
     }, [tema])
 
-    const paginar = (data) => {
-        let selected = data.selected;
-        setTema(curso.curso_temas[selected])
+    const paginar = async (data, posicion) => {
+        let selected = data.selected ?? posicion;
+        let temaBuscar =curso.curso_temas[selected];
+        setTema(temaBuscar)
+
+        const registroEncontrado = await db.documentacionLeida.where({
+            curso_id: curso.id,
+            tema_id: temaBuscar.id
+        }).first()
+        if (!registroEncontrado) {
+            db.documentacionLeida.put({
+                curso_id: curso.id,
+                tema_id: temaBuscar.id,
+                timestamp: Date.now(),
+                posicion: data.selected
+            });
+        }
+
     };
     const contenidoDescriptivoTema = subtemas.length > 0 && (subtemas.map((subtema, index) => (
         (index + 1) % 2 === 0 ? <>

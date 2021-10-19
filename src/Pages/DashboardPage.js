@@ -1,8 +1,11 @@
-import 'bootstrap/dist/css/bootstrap.min.css';
+import React, {useState} from "react";
 import MainLayout from '../Components/MainLayout';
-import MediaServices from "../Services/MediaServices";
+// import MediaServices from "../Services/MediaServices";
+// import db from "../Utils/DB";
 
 const DashboardPage = () => {
+    // const [documentosLeidos, setDocumentosLeidos] = useState([]);
+
     // MediaServices.guardarMedia();
     // MediaServices.obtenerURls()
     //     .then(response => {

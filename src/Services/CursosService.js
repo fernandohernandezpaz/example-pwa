@@ -1,5 +1,5 @@
 import request from '../Utils/Request';
-import Dexie from 'dexie';
+import db from "../Utils/DB";
 
 class CursosService {
 
@@ -19,10 +19,6 @@ class CursosService {
     }
 
     async recolectarDatosCursos(data) {
-        let db = new Dexie(process.env.REACT_APP_DB_NAME);
-        db.version(1).stores({
-            cursos: "++id, id_db, nombre, slug, descripcion, foto, curso_temas, syncro"
-        });
         if (navigator.onLine) {
             db.cursos.where('syncro').equals('true').delete();
         }

@@ -1,5 +1,5 @@
 import request from '../Utils/Request';
-import Dexie from 'dexie';
+import db from "../Utils/DB";
 
 class FincasService {
 
@@ -19,10 +19,6 @@ class FincasService {
     }
 
     async recolectarFincas(data) {
-        let db = new Dexie(process.env.REACT_APP_DB_NAME);
-        db.version(1).stores({
-            fincas: '++id, id_db, hectareas, user_id, activo, foto, syncro'
-        });
         for (const finca of data) {
             const existeFincaDBLocal = await db.fincas.where({
                 id_db: finca.id

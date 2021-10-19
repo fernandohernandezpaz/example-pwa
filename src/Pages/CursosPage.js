@@ -1,7 +1,6 @@
-import {useState, useEffect} from 'react';
+import {useEffect, useState} from 'react';
 import MainLayout from '../Components/MainLayout';
-import {Table, Image, Button, Row, Col, Form} from 'react-bootstrap';
-import {FloatingLabel, ProgressBar, Alert} from 'react-bootstrap';
+import {Alert, Button, Col, FloatingLabel, Form, Image, ProgressBar, Row, Table} from 'react-bootstrap';
 import CursosService from '../Services/CursosService';
 import DialogModal from '../Components/DialogModal'
 import {Link} from 'react-router-dom';
@@ -41,8 +40,7 @@ const CursosPage = () => {
         if (navigator.onLine) {
             db.cursos.each(async function (obj) {
                 if (!obj.id_db) {
-                    const record = obj;
-                    await guardarRegistro(record, true);
+                    await guardarRegistro(obj, true);
                 } else {
                     console.log('Np ...')
                 }

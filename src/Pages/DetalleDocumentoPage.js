@@ -5,6 +5,7 @@ import ReactPaginate from 'react-paginate';
 import db from "../Utils/DB";
 
 const DetalleDocumentoPage = (props) => {
+    const nextButtonPagination = 'next-page-link';
     const [curso, setCurso] = useState(null);
     const [tema, setTema] = useState(null);
     const [subtemas, setSubtemas] = useState([]);
@@ -13,34 +14,36 @@ const DetalleDocumentoPage = (props) => {
     const slug = props.match.params['temaSlug'];
 
     useEffect(async () => {
-        const findRecord = async (slug) => {
+        const buscarCurso = async (slug) => {
             if (slug === null || slug === undefined) {
                 return null;
             }
 
-            const existeCursoDBLocal = await db.cursos.where({
+            let existeCursoDBLocal = await db.cursos.where({
                 slug: slug
             }).first();
 
             return existeCursoDBLocal;
-        };
+        }
 
 
-        const record = await findRecord(slug);
+        const record = await buscarCurso(slug);
         setCurso(record)
-        setCantidadTemas(record.curso_temas.length);
-
     }, []);
 
     useEffect(() => {
         if (curso) {
             const {curso_temas} = curso;
+            setCantidadTemas(curso_temas.length);
             if (curso_temas.length) {
-                setTema(curso_temas[0])
+                if (localStorage.getItem('posicion_tema')) {
+                    setTema(curso_temas[localStorage.getItem('posicion_tema')])
+                } else {
+                    setTema(curso_temas[0])
+                }
             } else {
                 setTema(null)
             }
-
         }
     }, [curso]);
 
@@ -53,18 +56,20 @@ const DetalleDocumentoPage = (props) => {
         }
     }, [tema])
 
-    const paginar = async (data, posicion) => {
-        let selected = data.selected ?? posicion;
+    const paginar = async (data) => {
+        let selected = data.selected;
         let temaBuscar =curso.curso_temas[selected];
         setTema(temaBuscar)
 
+        setTema(temaBuscar)
+        localStorage.setItem('posicion_tema', data.selected);
         const registroEncontrado = await db.documentacionLeida.where({
-            curso_id: curso.id,
+            curso_id: curso.id_db,
             tema_id: temaBuscar.id
         }).first()
         if (!registroEncontrado) {
             db.documentacionLeida.put({
-                curso_id: curso.id,
+                curso_id: curso.id_db,
                 tema_id: temaBuscar.id,
                 timestamp: Date.now(),
                 posicion: data.selected
@@ -129,7 +134,7 @@ const DetalleDocumentoPage = (props) => {
                 pageLinkClassName={'page-link'}
                 previousClassName={'page-item'}
                 previousLinkClassName={'page-link'}
-                nextLinkClassName={'page-link'}
+                nextLinkClassName={`page-link ${nextButtonPagination}`}
                 nexClassName={'page-item'}
                 breakClassName={'break-me'}
                 marginPagesDisplayed={1}
